@@ -20,7 +20,8 @@ class lil_vludick_EDA:
       print("Описательная статистика")
       print(desc_df.to_markdown())
       print("Описательная статистика для категориальных переменных:")
-      print(self.df.describe(include=['category', 'object']).to_markdown())
+      if len(self.cat_col)>0:
+        print(self.df.describe(include=['category', 'object']).to_markdown())
       print("Кол-во пропущенных")
       print(self.df.isnull().sum())
 
