@@ -77,18 +77,18 @@ class Plots:
         pvalue_matrix = self.calculate_pvalues(data, method=method)
     
    
-        plt.figure(figsize=(12, 10))
+        plt.figure(figsize=(20, 20))
         plt.subplot(1, 2, 1)
         sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, 
                 fmt='.2f', square=True, cbar_kws={"shrink": .8})
         plt.title(f'Матрица корреляций ({method})')
     
     # Визуализация матрицы p-values
-        plt.subplot(1, 2, 2)
+        plt.subplot(1, 2, 2,)
     # Создаем маску для значимых корреляций
-        mask = pvalue_matrix > 0.05
+        mask = pvalue_matrix < 0.05
         sns.heatmap(pvalue_matrix, annot=True, cmap='viridis', 
-                fmt='.3f', square=True, cbar_kws={"shrink": .8},
+                fmt='.2f', square=True, cbar_kws={"shrink": .8},
                 mask=mask)
         plt.title('Матрица p-values (только значимые p < 0.05)')
     
