@@ -86,7 +86,7 @@ class Plots:
     # Визуализация матрицы p-values
         plt.subplot(1, 2, 2,)
     # Создаем маску для значимых корреляций
-        mask = pvalue_matrix < 0.05
+        mask = pvalue_matrix > 0.05
         sns.heatmap(pvalue_matrix, annot=True, cmap='viridis', 
                 fmt='.2f', square=True, cbar_kws={"shrink": .8},
                 mask=mask)
