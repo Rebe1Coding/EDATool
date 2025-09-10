@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import math
-from scipy.stats import spearmanr
+from scipy.stats import spearmanr, pearsonr
 sns.set_theme()
 
 
@@ -100,14 +100,29 @@ class Plots:
     @staticmethod
     def calculate_pvalues(df, method='spearman'):
         df = df.dropna()._get_numeric_data()
-        dfcols = pd.DataFrame(columns=df.columns)
-        pvalues = dfcols.transpose().join(dfcols, how='outer')
-        for r in df.columns:
-            for c in df.columns:
-                if method == 'spearman':
-                    corr, p_val = spearmanr(df[r], df[c])
+        n = len(df.columns)
+        pvalues = np.zeros((n, n))
+        
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    pvalues[i, j] = 0.0
                 else:
-                    from scipy.stats import pearsonr
-                    corr, p_val = pearsonr(df[r], df[c])
-                pvalues[r][c] = p_val
-        return pvalues
+                    col1 = df.iloc[:, i]
+                    col2 = df.iloc[:, j]
+                    
+                    # Удаляем NaN значения для корректного расчета
+                    mask = ~(col1.isna() | col2.isna())
+                    col1_clean = col1[mask]
+                    col2_clean = col2[mask]
+                    
+                    if len(col1_clean) > 2: 
+                        if method.lower() == 'spearman':
+                            _, p_val = spearmanr(col1_clean, col2_clean, nan_policy='omit')
+                        else:
+                            _, p_val = pearsonr(col1_clean, col2_clean)
+                        pvalues[i, j] = p_val
+                    else:
+                        pvalues[i, j] = np.nan
+        
+        return pd.DataFrame(pvalues, index=df.columns, columns=df.columns)
