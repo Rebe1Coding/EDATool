@@ -3,6 +3,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import math
+from scipy.stats import spearmanr
+sns.set_theme()
 
 
 
@@ -42,8 +44,6 @@ class Plots:
           print('Переменные не выбранны')
           return
 
-      
-
       n_cols = 3
       n_rows = math.ceil(len(categorical_cols) / n_cols)
 
@@ -66,9 +66,48 @@ class Plots:
       plt.show()
 
 
-    def corr_matrix(self, cols, target):
-       if cols is None:
-          cols =  self.num_col
-       plt.figure(figsize=(10,10))
-       sns.heatmap(data=self.df[cols], annot=True, cmap='coolwarm', fmt='.2f')
-       plt.show()
+    def corr_matrix(self, df, cols, target=None, method='spearman'):
+        
+    
+  
+        data = df[cols]
+    
+
+        corr_matrix = data.corr(method = method.lower())
+        pvalue_matrix = self.calculate_pvalues(data, method=method)
+    
+   
+        plt.figure(figsize=(12, 10))
+        plt.subplot(1, 2, 1)
+        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, 
+                fmt='.2f', square=True, cbar_kws={"shrink": .8})
+        plt.title(f'Матрица корреляций ({method})')
+    
+    # Визуализация матрицы p-values
+        plt.subplot(1, 2, 2)
+    # Создаем маску для значимых корреляций
+        mask = pvalue_matrix > 0.05
+        sns.heatmap(pvalue_matrix, annot=True, cmap='viridis', 
+                fmt='.3f', square=True, cbar_kws={"shrink": .8},
+                mask=mask)
+        plt.title('Матрица p-values (только значимые p < 0.05)')
+    
+        plt.tight_layout()
+        plt.show()
+    
+    
+
+    @staticmethod
+    def calculate_pvalues(df, method='spearman'):
+        df = df.dropna()._get_numeric_data()
+        dfcols = pd.DataFrame(columns=df.columns)
+        pvalues = dfcols.transpose().join(dfcols, how='outer')
+        for r in df.columns:
+            for c in df.columns:
+                if method == 'spearman':
+                    corr, p_val = spearmanr(df[r], df[c])
+                else:
+                    from scipy.stats import pearsonr
+                    corr, p_val = pearsonr(df[r], df[c])
+                pvalues[r][c] = p_val
+        return pvalues
